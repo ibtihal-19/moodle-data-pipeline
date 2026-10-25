@@ -1,0 +1,27 @@
+name: Moodle ELT Pipeline
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Tourne tout seul chaque nuit à 2h00 du matin
+  workflow_dispatch:     # Permet de le lancer en 1 clic quand tu veux !
+
+jobs:
+  run-elt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: 2. Installer Python 3.11 propre
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 3. Installer les bibliothèques récentes
+        run: pip install --upgrade pip && pip install -r requirements.txt
+
+      - name: 4. Exécuter le Pipeline (Bronze -> Silver -> Gold)
+        env:
+          MOODLE_TOKEN: ${{ secrets.MOODLE_TOKEN }}
+          MOTHERDUCK_TOKEN: ${{ secrets.MOTHERDUCK_TOKEN }}
+        run: python pipeline.py
